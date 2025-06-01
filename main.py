@@ -9,7 +9,7 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 
 GRANDMA_USER_ID = os.getenv("GRANDMA_USER_ID")
-GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID")  # её канал (можно id или @username)
+GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID") 
 @app.post("/")
 async def recevi_form(request: Request):
     data = await request.form()
