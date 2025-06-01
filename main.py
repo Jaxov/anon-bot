@@ -4,14 +4,12 @@ import os
 
 app = FastAPI()
 
-BOT_TOKEN = "8004499733:AAEzk0ak7wMbYmqN8NsNrNQFCvbcfpsFXOY"
-CHAT_ID = "-1002626610293"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+CHAT_ID = os.getenv("CHAT_ID")
 
-# GRANDMA_USER_ID = "1820698746"
-# GRANDMA_CHANNEL_ID = "@grandma_channel"  # её канал (можно id или @username)
 
-GRANDMA_USER_ID = "7219435166"
-GRANDMA_CHANNEL_ID = "@@jjjjasdjhasd"  # её канал (можно id или @username)
+GRANDMA_USER_ID = os.getenv("GRANDMA_USER_ID")
+GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID")  # её канал (можно id или @username)
 @app.post("/")
 async def recevi_form(request: Request):
     data = await request.form()
