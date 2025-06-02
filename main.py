@@ -71,21 +71,28 @@ async def telegram_webhook(request: Request):
             return {"status": "missing text"}
 
         async with httpx.AsyncClient() as client:
-            # 1. Отправляем вопрос как цитату
-            quote_payload = {
+            main_playload = {
                 "chat_id": GRANDMA_CHANNEL_ID,
-                "text": f"💬 *Вопрос:*\n> {question_text}",
+                "text": f"💬 *Вопрос:*\n> {question_text} \n📝 *Ответ:*\n{answer_text}",
                 "parse_mode": "Markdown"
             }
-            await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=quote_payload)
 
-            # 2. Отправляем ответ отдельным сообщением
-            answer_payload = {
-                "chat_id": GRANDMA_CHANNEL_ID,
-                "text": f"📝 *Ответ:*\n{answer_text}",
-                "parse_mode": "Markdown"
-            }
-            await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=answer_payload)
+            await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=main_playload)
+            # # 1. Отправляем вопрос как цитату
+            # quote_payload = {
+            #     "chat_id": GRANDMA_CHANNEL_ID,
+            #     "text": f"💬 *Вопрос:*\n> {question_text}",
+            #     "parse_mode": "Markdown"
+            # }
+            # await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=quote_payload)
+
+            # # 2. Отправляем ответ отдельным сообщением
+            # answer_payload = {
+            #     "chat_id": GRANDMA_CHANNEL_ID,
+            #     "text": f"📝 *Ответ:*\n{answer_text}",
+            #     "parse_mode": "Markdown"
+            # }
+            # await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=answer_payload)
 
         return {"status": "ok"}
 
