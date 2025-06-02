@@ -65,7 +65,7 @@ async def telegram_webhook(request: Request):
         payload = {
             "chat_id": GRANDMA_CHANNEL_ID,
             "from_chat_id": chat_id,
-            "message_id": reply_to_message["message_id"] + message["message_id"]
+            "message_id": reply_to_message["message_id"]
         }
 
         async with httpx.AsyncClient() as client:
