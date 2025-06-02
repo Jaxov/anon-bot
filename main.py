@@ -44,40 +44,36 @@ async def recevi_form(request: Request):
 
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
-    data = await request.json()
-    
-    # Проверяем, что это сообщение  
-    message = data.get("message")
-    if not message:
-        return {"status": "no message"}
+    try:
+        data = await request.json()
+        print("FULL INCOMING DATA:", data)
 
-    from_user = message.get("from", {})
-    user_id = from_user.get("id")
- 
-    # Проверяем, что это бабушка ответила
-    if user_id != GRANDMA_USER_ID:
-        return {"status": "not grandma"}
+        message = data.get("message")
+        if not message:
+            return {"status": "no message"}
 
-    # Проверяем, что сообщение - ответ на другое сообщение (реплай)
-    reply_to_message = message.get("reply_to_message")
-    if not reply_to_message:
-        return {"status": "not a reply"}
+        reply_to_message = message.get("reply_to_message")
+        if not reply_to_message:
+            return {"status": "not a reply"}
 
-    # Теперь пересылаем ответ бабушки в её канал
-    message_id = message.get("message_id")
-    chat_id = message.get("chat", {}).get("id")
+        chat_id = message["chat"]["id"]
+        
+        print(f"Using BOT_TOKEN: {BOT_TOKEN[:5]}...")
+        print(f"Forwarding to: {GRANDMA_CHANNEL_ID}")
 
-    forward_url = f"https://api.telegram.org/bot{BOT_TOKEN}/forwardMessage"
-    payload = {
-        "chat_id": GRANDMA_CHANNEL_ID,
-        "from_chat_id": chat_id,
-        "message_id": message_id
-    }
+        forward_url = f"https://api.telegram.org/bot{BOT_TOKEN}/forwardMessage"
+        payload = {
+            "chat_id": GRANDMA_CHANNEL_ID,
+            "from_chat_id": chat_id,
+            "message_id": reply_to_message["message_id"]
+        }
 
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(forward_url, json=payload)
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(forward_url, json=payload)
+            print("Telegram API response:", resp.status_code, resp.text)
 
-    if resp.status_code == 200:
-        return {"status": "message forwarded"}
-    else:
-        return {"error": "failed to forward", "details": resp.text}
+        return {"status": "ok"}
+
+    except Exception as e:
+        print(f"ERROR: {str(e)}")
+        return {"status": "error", "details": str(e)}
