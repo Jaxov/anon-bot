@@ -42,6 +42,13 @@ async def recevi_form(request: Request):
     return question
 
 
+from fastapi import Request
+import httpx
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID")  # например, "@your_channel" или "-10012345678"
+
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
     try:
@@ -57,23 +64,32 @@ async def telegram_webhook(request: Request):
             return {"status": "not a reply"}
 
         chat_id = message["chat"]["id"]
-        
-        print(f"Using BOT_TOKEN: {BOT_TOKEN[:5]}...")
-        print(f"Forwarding to: {GRANDMA_CHANNEL_ID}")
+        answer_text = message.get("text", "").strip()
+        question_text = reply_to_message.get("text", "").strip()
 
-        forward_url = f"https://api.telegram.org/bot{BOT_TOKEN}/forwardMessage"
-        payload = {
-            "chat_id": GRANDMA_CHANNEL_ID,
-            "from_chat_id": chat_id,
-            "message_id": reply_to_message["message_id"]
-        }
+        if not answer_text or not question_text:
+            return {"status": "missing text"}
 
         async with httpx.AsyncClient() as client:
-            resp = await client.post(forward_url, json=payload)
-            print("Telegram API response:", resp.status_code, resp.text)
+            # 1. Отправляем вопрос как цитату
+            quote_payload = {
+                "chat_id": GRANDMA_CHANNEL_ID,
+                "text": f"💬 *Вопрос:*\n> {question_text}",
+                "parse_mode": "Markdown"
+            }
+            await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=quote_payload)
+
+            # 2. Отправляем ответ отдельным сообщением
+            answer_payload = {
+                "chat_id": GRANDMA_CHANNEL_ID,
+                "text": f"📝 *Ответ:*\n{answer_text}",
+                "parse_mode": "Markdown"
+            }
+            await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=answer_payload)
 
         return {"status": "ok"}
 
     except Exception as e:
         print(f"ERROR: {str(e)}")
         return {"status": "error", "details": str(e)}
+
