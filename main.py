@@ -76,14 +76,15 @@ async def telegram_webhook(request: Request):
         formatted_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
         header = f"💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}"
-        quoted_question = "\n".join("<blockquoute>{question_text}</blockquoute>")
+        quoted_question = f"> {question_text}"  # простая цитата в Markdown
+
         final_text = f"{header}\n\n{quoted_question}\n\n📝:\n{answer_text}"
 
         async with httpx.AsyncClient() as client:
             main_playload = {
                 "chat_id": GRANDMA_CHANNEL_ID,
                 "text": final_text,
-                "parse_mode": "Markdown"
+                "parse_mode": "Markdown" 
             }
 
             await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=main_playload)
