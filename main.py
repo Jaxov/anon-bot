@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 import httpx
 import os
+from datetime import datetime
 
 app = FastAPI()
 
@@ -42,12 +43,12 @@ async def recevi_form(request: Request):
     return question
 
 
-from fastapi import Request
-import httpx
-import os
+# from fastapi import Request
+# import httpx
+# import os
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID")  # например, "@your_channel" или "-10012345678"
+# BOT_TOKEN = os.getenv("BOT_TOKEN")
+# GRANDMA_CHANNEL_ID = os.getenv("GRANDMA_CHANNEL_ID")  # например, "@your_channel" или "-10012345678"
 
 @app.post("/webhook")
 async def telegram_webhook(request: Request):
@@ -66,14 +67,22 @@ async def telegram_webhook(request: Request):
         chat_id = message["chat"]["id"]
         answer_text = message.get("text", "").strip()
         question_text = reply_to_message.get("text", "").strip()
+        message_id = reply_to_message.get("message_id")
 
         if not answer_text or not question_text:
             return {"status": "missing text"}
+        
+
+        formatted_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
+        header = f"💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}"
+        quoted_question = "\n".join([f"> {line}" for line in question_text.splitlines()])
+        final_text = f"{header}\n\n{quoted_question}\n\n📝 *Ответ:*\n{answer_text}"
 
         async with httpx.AsyncClient() as client:
             main_playload = {
                 "chat_id": GRANDMA_CHANNEL_ID,
-                "text": f"💬 *Вопрос:*\n> {question_text} \n📝 *Ответ:*\n{answer_text}",
+                "text": final_text,
                 "parse_mode": "Markdown"
             }
 
@@ -99,4 +108,3 @@ async def telegram_webhook(request: Request):
     except Exception as e:
         print(f"ERROR: {str(e)}")
         return {"status": "error", "details": str(e)}
-
