@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 import httpx
 import os
 from datetime import datetime
+import html
 
 app = FastAPI()
 
@@ -76,15 +77,20 @@ async def telegram_webhook(request: Request):
         formatted_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
         header = f"💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}"
-        quoted_question = f"> {question_text}"  # простая цитата в Markdown
 
-        final_text = f"{header}\n\n{quoted_question}\n\n📝:\n{answer_text}"
+        # Экранируем спецсимволы для HTML
+        safe_question = html.escape(question_text)
+        safe_answer = html.escape(answer_text)
+
+        quoted_question = f"<blockquote>{safe_question}</blockquote>"
+
+        final_text = f"{header}\n\n{quoted_question}\n\n📝:\n{safe_answer}"
 
         async with httpx.AsyncClient() as client:
             main_playload = {
                 "chat_id": GRANDMA_CHANNEL_ID,
                 "text": final_text,
-                "parse_mode": "Markdown" 
+                "parse_mode": "HTML" 
             }
 
             await client.post(f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage", json=main_playload)
