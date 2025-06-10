@@ -76,8 +76,8 @@ async def telegram_webhook(request: Request):
         formatted_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
         header = f"💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}"
-        quoted_question = "\n".join([f"> {line}" for line in question_text.splitlines()])
-        final_text = f"{header}\n\n{quoted_question}\n\n📝 *Ответ:*\n{answer_text}"
+        quoted_question = "\n".join("<blockquoute>{question_text}</blockquoute>")
+        final_text = f"{header}\n\n{quoted_question}\n\n📝:\n{answer_text}"
 
         async with httpx.AsyncClient() as client:
             main_playload = {
