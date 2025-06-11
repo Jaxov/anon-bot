@@ -76,7 +76,7 @@ async def telegram_webhook(request: Request):
 
         formatted_datetime = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
 
-        header = f"💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}"
+        header = f" *💬Ответ #{message_id} на форму «Задать анонимный вопрос психологу»\n{formatted_datetime}*"
 
         # Экранируем спецсимволы для HTML
         safe_question = html.escape(question_text)
